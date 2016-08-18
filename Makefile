@@ -3,8 +3,8 @@ CC = llvm-g++
 CPP_FILES := $(wildcard src/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 LD_FLAGS  :=  #-lOpenCL
-LD_STATIC_LIBS := ../accelerator-toolkit/lib/accelerator-toolkit.a ../evolution-toolkit/lib/evolution-toolkit.a
-CC_FLAGS  := -Wall -std=c++11 -pedantic -I../accelerator-toolkit/src/ -I../evolution-toolkit/src/ -O3 #(optimierung) # -g (for debugging)
+LD_STATIC_LIBS := ../cpp-accelerator-toolkit/lib/accelerator-toolkit.a ../cpp-evolution-toolkit/lib/evolution-toolkit.a
+CC_FLAGS  := -Wall -std=c++11 -pedantic -I../cpp-accelerator-toolkit/src/ -I../cpp-evolution-toolkit/src/ -O3 #(optimierung) # -g (for debugging)
 
 app.exe: obj/main.o $(OBJ_FILES) 
 	$(CC) $(LD_FLAGS) $(LD_STATIC_LIBS) -o $@ $^
