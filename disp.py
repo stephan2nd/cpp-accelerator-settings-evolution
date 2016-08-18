@@ -13,21 +13,24 @@ if sys.argv[2]=="hist2d":
 	x = []
 	y = []
 	z = []
-	first = True
-	myBins = 0
+	line_nr = 0
+	xBins = 0
+	yBins = 0
 	for line in fobj:
-		if first:
-			myBins =  float(line.rstrip())
-			first = False
+		if line_nr == 0:
+			xBins =  float(line.rstrip())
+		elif line_nr == 1:
+			yBins =  float(line.rstrip())					
 		else:
 			linestr = str(line.rstrip())
 			linearr = linestr.split(",")
 			x.append(float(linearr[0]))
 			y.append(float(linearr[1]))
-			z.append(float(linearr[2]))	    
+			z.append(float(linearr[2]))	 
+		line_nr += 1   
 	fobj.close()
 
-	plt.hist2d(x, y, bins=myBins, weights=z)
+	plt.hist2d(x, y, bins=[xBins, yBins], weights=z)
 	plt.colorbar()
 	plt.show()
 
