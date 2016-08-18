@@ -83,7 +83,7 @@ int main(int argc , char *argv[])
 
 	int number_of_genes       = acc.settingSize();
 	int number_of_genomes     = 50;
-	int number_of_generations = 50;
+	int number_of_generations = 10;
 
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
