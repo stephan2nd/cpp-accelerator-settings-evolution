@@ -82,8 +82,8 @@ int main(int argc , char *argv[])
 	default_random_engine rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	int number_of_genes       = acc.settingSize();
-	int number_of_genomes     = 50;
-	int number_of_generations = 10;
+	int number_of_genomes     = 100;
+	int number_of_generations = 50;
 
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
