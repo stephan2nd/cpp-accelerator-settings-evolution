@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random>
+//#include <chrono>
 
 #include "Genome.hpp"
 #include "Population.hpp"
@@ -22,14 +23,13 @@ Trafo* t2;
 Trafo* t3;
 Trafo* t4;
 Trafo* final_trafo;
-Screen* final_screen;
 
 double fitness_function(const vector<double>& genes)
 {
 	double sum_off_diff = 0;
 	acc.setNormValues(genes);
- 	acc.startSimulation(10000);
- 	sum_off_diff += t1->getCounts() + 10*t2->getCounts() + 100*t3->getCounts() + 1000*t4->getCounts() + 10000*final_trafo->getCounts();
+ 	acc.startSimulation(20000);
+ 	sum_off_diff += t1->getCounts() + 10*t2->getCounts() + 100*t3->getCounts() + 1000*t4->getCounts() + 100000*final_trafo->getCounts();
 	return sum_off_diff;
 }
  
@@ -37,6 +37,10 @@ double fitness_function(const vector<double>& genes)
 int main(int argc , char *argv[])
 {
 	cout << "BRIENCHJEN!" << endl;
+	
+	clock_t begin = clock();
+	time_t start, finish;
+	time(&start);	
  	
 	double width = 0.1;
 	double height = 0.1; 
@@ -55,35 +59,35 @@ int main(int argc , char *argv[])
  	acc.appendDevice(new Screen("Screen2", width, height, dpm));
  	acc.appendDevice(new QuadrupoleMagnet("QD1", width, height, 0.5, 0.0, 10));
  	acc.appendDevice(new QuadrupoleMagnet("QD2", width, height, 0.5, -10, 0.0));
+ 	acc.appendDevice(new Screen("Screen3", width, height, dpm)); 
  	acc.appendDevice(new DriftTube("Drift3", width, height, 4.0));
  	acc.appendDevice(t3); 	
- 	acc.appendDevice(new Screen("Screen3", width, height, dpm)); 	
+ 	acc.appendDevice(new Screen("Screen4", width, height, dpm)); 	
   	acc.appendDevice(new DipoleMagnet("BEND1", width, height, 2.0, 0.5));
   	acc.appendDevice(new DriftTube("Drift4", width, height, 2.0));	
  	acc.appendDevice(t4);  	
- 	acc.appendDevice(new Screen("Screen4", width, height, dpm)); 	
+ 	acc.appendDevice(new Screen("Screen5", width, height, dpm)); 	
  	acc.appendDevice(new QuadrupoleMagnet("QD3", width, height, 0.5, 0.0, 10));
  	acc.appendDevice(new QuadrupoleMagnet("QD4", width, height, 0.5, -10, 0.0)); 	
   	acc.appendDevice(new DriftTube("Drift5", width, height, 4.0));
- 	acc.appendDevice(new Screen("Screen5", width, height, dpm)); 
+ 	acc.appendDevice(new Screen("Screen6", width, height, dpm)); 
  	acc.appendDevice(new HKick("HKick2", -0.1, 0.1));
    	acc.appendDevice(new DriftTube("Drift6", width, height, 2.0));	
  	acc.appendDevice(new HKick("HKick3", -0.1, 0.1));   	
    	acc.appendDevice(new DriftTube("Drift7", width, height, 2.0));	 	
  	acc.appendDevice(new Slit("Slit", -0.05, -0.04, -0.01, 0.01));
- 	final_screen = new Screen("FinalScreen", width, height, dpm);
- 	acc.appendDevice(final_screen);
+ 	acc.appendDevice(new Screen("Screen7", width, height, dpm));
  	final_trafo = new Trafo("FinalTrafo");
  	acc.appendDevice(final_trafo);
  	
-
+	acc.setScreenIgnore(true);
 
  	
 	default_random_engine rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	int number_of_genes       = acc.settingSize();
-	int number_of_genomes     = 100;
-	int number_of_generations = 50;
+	int number_of_genomes     = 20;
+	int number_of_generations = 100;
 
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
@@ -92,26 +96,24 @@ int main(int argc , char *argv[])
 	ep.p_mutate_replace           = 0.05;
 	ep.p_non_homologous_crossover = 0.10;
 	ep.b_crossing_over            = true;
-	ep.b_mutate_mutation_rate     = false;
+	ep.b_mutate_mutation_rate     = true;
 	ep.n_min_genes_till_cross     = 1;
 	ep.n_max_genes_till_cross     = number_of_genes/2;	
 	     
 	
     Population p(number_of_genomes, number_of_genes, rnd);
     
-    for( int i=0; i<number_of_generations; i++ ) {
-    
+    for( int i=0; i<number_of_generations; i++ ) {    
 		p = p.createOffspring(fitness_function, ep, rnd);
     	p.evaluate(fitness_function);
 	    cout << "Generation " << i << ":\t" << p.toString() << endl;    
-	    
-
     }
     
-    cout << p.getBestGenome() << endl;
-
+    cout << p.getBestGenome() << endl;    
+    
+	acc.setScreenIgnore(false);
     acc.setNormValues(p.getBestGenome().getGenes());
- 	acc.startSimulation(100000);
+ 	acc.startSimulation(1000000);
  	cout << acc.toString() << endl; 
     
     final_screen->exportHistogram();
@@ -119,7 +121,14 @@ int main(int argc , char *argv[])
 	((Screen*) acc.getDeviceByName("Screen2"))->exportHistogram();
 	((Screen*) acc.getDeviceByName("Screen3"))->exportHistogram();
 	((Screen*) acc.getDeviceByName("Screen4"))->exportHistogram();			
-	((Screen*) acc.getDeviceByName("Screen5"))->exportHistogram();		
+	((Screen*) acc.getDeviceByName("Screen5"))->exportHistogram();
+	((Screen*) acc.getDeviceByName("Screen6"))->exportHistogram();
+	((Screen*) acc.getDeviceByName("Screen7"))->exportHistogram();
+
+	time(&finish);
+	float diff = (((float)clock()-(float)begin)/CLOCKS_PER_SEC);
+	cout << "CPU-time: " << diff << " s" << endl;
+	cout << "runtime: " << difftime(finish,start) << " s" << endl;
 
     return 0;
 }
