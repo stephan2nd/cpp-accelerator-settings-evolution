@@ -4,7 +4,7 @@ import sys
 import math
 from functools import partial
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 fobj = open(sys.argv[1], "r")
 
@@ -47,6 +47,22 @@ elif sys.argv[2]=="hist":
 	#plt.autoscale(enable=False, axis='x', tight=True)
 	plt.hist(x, bins=100, weights=z)
 	plt.xlim(-50,50)
+	plt.show()
+
+elif sys.argv[2]=="func":
+        x = []
+        y = []
+        for line in fobj:
+            linestr =  str(line.rstrip())
+            linearr = linestr.split(",")
+            x.append(float(linearr[0]))
+            y.append(float(linearr[1]))
+        fobj.close()
+
+	#plt.semilogy(y)
+	plt.plot(y)
+	plt.title('max fitness per generation')	
+	plt.grid(True)
 	plt.show()
 	
 else: 

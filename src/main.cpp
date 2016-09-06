@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random>
+#include <fstream>
 //#include <chrono>
 
 #include "Genome.hpp"
@@ -129,7 +130,7 @@ double fitness_m3_beamline(const vector<double>& genes)
 {
 	double f=0;
 	acc.setNormValues(genes);
- 	acc.startSimulation(30000);
+ 	acc.startSimulation(50000);
  	f += t0->getCounts() * (1 + t1->getCounts()) * (1 + t2->getCounts()) * (1 + t3->getCounts()) * (1 + t4->getCounts()) * (1 + t5->getCounts()) * (1 + t6->getCounts()) * (1 + t7->getCounts());
 	return f;
 }
@@ -145,7 +146,8 @@ void experiment_m3_beamline()
 	t6 = new Trafo("T6");
 	t7 = new Trafo("T7");	
 	
-	IonSource ion_source(12, 6, 2, 1000, 0., 0.001, 0., 0.002, 0., 0.001, 0., 0.002, 0., 0.01, 0., 0.01);
+//	IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
+        IonSource ion_source(12, 6, 2, 1000, 0., 0.00006, 0., 0.00123, 0., 0.00032, 0., 0.00158, 0., 0., 0., 0.);
 	acc.setIonSource(ion_source);
 		
 	double max_quad_strength = 7;
@@ -158,9 +160,12 @@ void experiment_m3_beamline()
   	acc.appendDevice(t0); 	
   	acc.appendDevice(new RectangularDipoleMagnet("UT1MK0", 0.080, 0.040, -10.*pi*-4.894/180., -10.*pi/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.1 + 2.3385 + 0.124));
- 	acc.appendDevice(new HKick("UMAMS1H", -0.1, 0.1));
+	acc.appendDevice(new Screen("PROBE", grid_width, grid_width, dpm));
+	acc.appendDevice(new HKick("UMAMS1H", -0.1, 0.1));
  	acc.appendDevice(new VKick("UMAMS1V", -0.1, 0.1));
+        acc.appendDevice(new Screen("PROBE2", grid_width, grid_width, dpm));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.124 + 0.0935 + 0.0335));
+        acc.appendDevice(new Screen("PROBE3", grid_width, grid_width, dpm));
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD11", 0.040, 0.040, 0.318, 0.0, max_quad_strength));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.0335 + 0.0335));
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD12", 0.040, 0.040, 0.318, -max_quad_strength, 0.0));
@@ -214,7 +219,7 @@ void experiment_m3_beamline()
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 2.5845 + 2.400));
 
  	acc.appendDevice(new Screen("TARGET_SCREENa", grid_width, grid_width, dpm)); 
- 	acc.appendDevice(new Slit("TARGET_SIZE", -0.005, 0.005, -0.005, 0.005));
+ 	acc.appendDevice(new Slit("TARGET_SIZE", -0.002, 0.002, -0.002, 0.002));
  	acc.appendDevice(new Screen("TARGET_SCREENb", grid_width, grid_width, dpm)); 	
  	acc.appendDevice(t7);
 	acc.setScreenIgnore(true);
@@ -223,34 +228,39 @@ void experiment_m3_beamline()
 	default_random_engine rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	int number_of_genes       = acc.settingSize();
-	int number_of_genomes     = 40;
-	int number_of_generations = 80;
+	int number_of_genomes     = 100;
+	int number_of_generations = 300;
 
 	EvolutionParameters ep;
-	ep.n_keep                     = 3;
+	ep.n_keep                     = 2;
 	ep.sigma_survive              = 0.3; // 0.3 scheint ein guter Wert zu sein // 0.1 wirft 60% weg, 0.2 wirft 40% weg
 	ep.p_mutate_disturbe          = 0.7;
-	ep.p_mutate_replace           = 0.10; // 0.05
-	ep.p_non_homologous_crossover = 0.10;
+	ep.p_mutate_replace           = 0.08; // 0.05
+	ep.p_non_homologous_crossover = 0.08;
 	ep.b_crossing_over            = true;
 	ep.b_mutate_mutation_rate     = true;
 	ep.n_min_genes_till_cross     = 1;
 	ep.n_max_genes_till_cross     = number_of_genes/2;	
 	     
 	
-    Population p(number_of_genomes, number_of_genes, rnd);
-   	p.evaluate(fitness_m3_beamline);    
+	Population p(number_of_genomes, number_of_genes, rnd);
+	p.evaluate(fitness_m3_beamline);    
 
-    for( int i=0; i<number_of_generations; i++ ) {    
+        ofstream outfile;
+        outfile.open("fitness.dat", ios::out | ios::trunc );
+
+	for( int i=0; i<number_of_generations; i++ ) {    
 		p = p.createOffspring(ep, rnd);
-    	p.evaluate(fitness_m3_beamline);
-	    cout << "Generation " << i << ":\t" << p.toString() << endl;    
-    }
+		p.evaluate(fitness_m3_beamline);
+		outfile << i << "," << p.getBestGenome().fitness() << "\n";
+		cout << "Generation " << i << ":\t" << p.toString() << endl;    
+	}
     
-    cout << p.getBestGenome() << endl;    
+	outfile.close();
+	cout << p.getBestGenome() << endl;    
     
 	acc.setScreenIgnore(false);
-    acc.setNormValues(p.getBestGenome().getGenes());
+	acc.setNormValues(p.getBestGenome().getGenes());
  	acc.startSimulation(1000000);
  	cout << acc.toString() << endl; 	
  	
@@ -262,7 +272,9 @@ void experiment_m3_beamline()
 	((Screen*) acc.getDeviceByName("UM3DG6"))->exportHistogram();
 	((Screen*) acc.getDeviceByName("TARGET_SCREENa"))->exportHistogram();
 	((Screen*) acc.getDeviceByName("TARGET_SCREENb"))->exportHistogram();
-	//((Screen*) acc.getDeviceByName("Screen7"))->exportHistogram();
+	((Screen*) acc.getDeviceByName("PROBE"))->exportHistogram();
+	((Screen*) acc.getDeviceByName("PROBE2"))->exportHistogram();
+        ((Screen*) acc.getDeviceByName("PROBE3"))->exportHistogram();
 }
 
  
