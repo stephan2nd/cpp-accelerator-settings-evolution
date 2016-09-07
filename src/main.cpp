@@ -147,7 +147,7 @@ void experiment_m3_beamline()
 	t7 = new Trafo("T7");	
 	
 //	IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
-        IonSource ion_source(12, 6, 2, 1000, 0., 0.00006, 0., 0.00123, 0., 0.00032, 0., 0.00158, 0., 0., 0., 0.);
+        IonSource ion_source(12, 6, 2, 1000, 0., 0.00006, 0., 0.001, 0., 0.0003, 0., 0.001, 0., 0., 0., 0.);
 	acc.setIonSource(ion_source);
 		
 	double max_quad_strength = 7;
@@ -229,7 +229,7 @@ void experiment_m3_beamline()
 
 	int number_of_genes       = acc.settingSize();
 	int number_of_genomes     = 100;
-	int number_of_generations = 300;
+	int number_of_generations = 500;
 
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
@@ -264,6 +264,7 @@ void experiment_m3_beamline()
  	acc.startSimulation(1000000);
  	cout << acc.toString() << endl; 	
  	
+	acc.writeMirkoMakro("mirko.mak");
  	
 	((Screen*) acc.getDeviceByName("UMADG1"))->exportHistogram();
 	((Screen*) acc.getDeviceByName("UMADG2"))->exportHistogram();
