@@ -147,7 +147,7 @@ void experiment_m3_beamline()
 	t7 = new Trafo("T7");	
 	
 //	IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
-        IonSource ion_source(12, 6, 2, 1000, 0., 0.00006, 0., 0.001, 0., 0.0003, 0., 0.001, 0., 0., 0., 0.);
+        IonSource ion_source(12, 6, 2, 1000, 0., 0.00003, 0., 0.0005, 0., 0.00015, 0., 0.0005, 0., 0., 0., 0.);
 	acc.setIonSource(ion_source);
 		
 	double max_quad_strength = 7;
@@ -234,9 +234,9 @@ void experiment_m3_beamline()
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
 	ep.sigma_survive              = 0.3; // 0.3 scheint ein guter Wert zu sein // 0.1 wirft 60% weg, 0.2 wirft 40% weg
-	ep.p_mutate_disturbe          = 0.7;
-	ep.p_mutate_replace           = 0.08; // 0.05
-	ep.p_non_homologous_crossover = 0.08;
+	ep.p_mutate_disturbe          = 0.6;
+	ep.p_mutate_replace           = 0.05; // 0.05
+	ep.p_non_homologous_crossover = 0.05;
 	ep.b_crossing_over            = true;
 	ep.b_mutate_mutation_rate     = true;
 	ep.n_min_genes_till_cross     = 1;

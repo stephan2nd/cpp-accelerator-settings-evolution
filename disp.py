@@ -7,9 +7,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 fobj = open(sys.argv[1], "r")
+diagram_type = fobj.read().split('\n', 1)[0]
+fobj.close()
 
+print "diagram type =", diagram_type 
 
-if sys.argv[2]=="hist2d":
+def hist2d(): #if sys.argv[2]=="hist2d":
+	fobj = open(sys.argv[1], "r")
 	x = []
 	y = []
 	z = []
@@ -18,8 +22,10 @@ if sys.argv[2]=="hist2d":
 	yBins = 0
 	for line in fobj:
 		if line_nr == 0:
-			xBins =  float(line.rstrip())
+			pass
 		elif line_nr == 1:
+			xBins =  float(line.rstrip())
+		elif line_nr == 2:
 			yBins =  float(line.rstrip())					
 		else:
 			linestr = str(line.rstrip())
@@ -34,7 +40,41 @@ if sys.argv[2]=="hist2d":
 	plt.colorbar()
 	plt.show()
 
-elif sys.argv[2]=="hist":
+
+
+def func():
+	fobj = open(sys.argv[1], "r")
+        x = []
+        y = []
+	line_nr = 0
+        for line in fobj:
+		if line_nr == 0:
+			pass
+		else:
+			linestr =  str(line.rstrip())
+			linearr = linestr.split(",")
+			x.append(float(linearr[0]))
+			y.append(float(linearr[1]))
+		line_nr += 1
+	fobj.close()
+
+	#plt.semilogy(y)
+	plt.plot(y)
+	plt.title('max fitness per generation') 
+	plt.grid(True)
+	plt.show()
+
+
+
+if diagram_type == "hist2d":
+        hist2d()
+elif diagram_type == "func":
+	func()
+
+
+
+
+def hist():
 	x = []
 	z = []
 	for line in fobj:
@@ -49,24 +89,7 @@ elif sys.argv[2]=="hist":
 	plt.xlim(-50,50)
 	plt.show()
 
-elif sys.argv[2]=="func":
-        x = []
-        y = []
-        for line in fobj:
-            linestr =  str(line.rstrip())
-            linearr = linestr.split(",")
-            x.append(float(linearr[0]))
-            y.append(float(linearr[1]))
-        fobj.close()
-
-	#plt.semilogy(y)
-	plt.plot(y)
-	plt.title('max fitness per generation')	
-	plt.grid(True)
-	plt.show()
-	
-else: 
-
+def other():
 	x = []
 	y = []
 	s = []
@@ -100,3 +123,5 @@ else:
 		
 	plt.axis([minx, maxx, miny, maxy])
 	plt.show()
+
+
