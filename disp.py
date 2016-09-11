@@ -58,8 +58,8 @@ def func():
 		line_nr += 1
 	fobj.close()
 
-	#plt.semilogy(y)
-	plt.plot(y)
+	plt.semilogy(y)
+	#plt.plot(y)
 	plt.title('max fitness per generation') 
 	plt.grid(True)
 	plt.show()
