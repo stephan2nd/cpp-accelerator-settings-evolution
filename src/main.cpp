@@ -86,8 +86,8 @@ void experiment_simple_acc()
 	default_random_engine rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	int number_of_genes       = acc.settingSize();
-	int number_of_genomes     = 20;
-	int number_of_generations = 100;
+	int number_of_genomes     = 10;
+	int number_of_generations = 2000;
 
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
@@ -146,8 +146,8 @@ void experiment_m3_beamline()
 	t6 = new Trafo("T6");
 	t7 = new Trafo("T7");	
 	
-//	IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
-        IonSource ion_source(12, 6, 2, 1000, 0., 0.00003, 0., 0.0005, 0., 0.00015, 0., 0.0005, 0., 0., 0., 0.);
+	IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
+ //       IonSource ion_source(12, 6, 2, 1000, 0., 0.00003, 0., 0.0005, 0., 0.00015, 0., 0.0005, 0., 0., 0., 0.);
 	acc.setIonSource(ion_source);
 		
 	double max_quad_strength = 7;
@@ -163,9 +163,9 @@ void experiment_m3_beamline()
 	acc.appendDevice(new Screen("PROBE", grid_width, grid_width, dpm));
 	acc.appendDevice(new HKick("UMAMS1H", -0.1, 0.1));
  	acc.appendDevice(new VKick("UMAMS1V", -0.1, 0.1));
-        acc.appendDevice(new Screen("PROBE2", grid_width, grid_width, dpm));
+	acc.appendDevice(new Screen("PROBE2", grid_width, grid_width, dpm));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.124 + 0.0935 + 0.0335));
-        acc.appendDevice(new Screen("PROBE3", grid_width, grid_width, dpm));
+    acc.appendDevice(new Screen("PROBE3", grid_width, grid_width, dpm));
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD11", 0.040, 0.040, 0.318, 0.0, max_quad_strength));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.0335 + 0.0335));
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD12", 0.040, 0.040, 0.318, -max_quad_strength, 0.0));
@@ -228,8 +228,8 @@ void experiment_m3_beamline()
 	default_random_engine rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	int number_of_genes       = acc.settingSize();
-	int number_of_genomes     = 100;
-	int number_of_generations = 500;
+	int number_of_genomes     = 20;
+	int number_of_generations = 200;
 
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
@@ -248,12 +248,13 @@ void experiment_m3_beamline()
 
         ofstream outfile;
         outfile.open("fitness.dat", ios::out | ios::trunc );
+        outfile << "func\n";
 
 	for( int i=0; i<number_of_generations; i++ ) {    
 		p = p.createOffspring(ep, rnd);
 		p.evaluate(fitness_m3_beamline);
 		outfile << i << "," << p.getBestGenome().fitness() << "\n";
-		cout << "Generation " << i << ":\t" << p.toString() << endl;    
+		cout << "Generation " << i << ":\t" << p.toLine() << endl;    
 	}
     
 	outfile.close();
@@ -261,7 +262,7 @@ void experiment_m3_beamline()
     
 	acc.setScreenIgnore(false);
 	acc.setNormValues(p.getBestGenome().getGenes());
- 	acc.startSimulation(1000000);
+ 	acc.startSimulation(10000000);
  	cout << acc.toString() << endl; 	
  	
 	acc.writeMirkoMakro("mirko.mak");
