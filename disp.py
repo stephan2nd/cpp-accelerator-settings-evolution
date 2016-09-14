@@ -44,8 +44,8 @@ def hist2d(): #if sys.argv[2]=="hist2d":
 
 def func():
 	fobj = open(sys.argv[1], "r")
-        x = []
-        y = []
+    x = []
+    y = []
 	line_nr = 0
         for line in fobj:
 		if line_nr == 0:
