@@ -130,7 +130,7 @@ double fitness_m3_beamline(const vector<double>& genes)
 {
 	double f=0;
 	acc.setNormValues(genes);
- 	acc.startSimulation(50000);
+ 	acc.startSimulation(40000);
  	f += t0->getCounts() * (1 + t1->getCounts()) * (1 + t2->getCounts()) * (1 + t3->getCounts()) * (1 + t4->getCounts()) * (1 + t5->getCounts()) * (1 + t6->getCounts()) * (1 + t7->getCounts());
 	return f;
 }
@@ -146,8 +146,9 @@ void experiment_m3_beamline()
 	t6 = new Trafo("T6");
 	t7 = new Trafo("T7");	
 	
-	IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
- //       IonSource ion_source(12, 6, 2, 1000, 0., 0.00003, 0., 0.0005, 0., 0.00015, 0., 0.0005, 0., 0., 0., 0.);
+	//IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
+	//IonSource ion_source(12, 6, 2, 1000, 0., 0.00006, 0., 0.00150, 0., 0.00030, 0., 0.00212, 0., 0., 0., 0.);
+    IonSource ion_source(12, 6, 2, 1000, 0., 0.00003, 0., 0.00050, 0., 0.00015, 0., 0.00050, 0., 0., 0., 0.);
 	acc.setIonSource(ion_source);
 		
 	double max_quad_strength = 7;
@@ -228,18 +229,18 @@ void experiment_m3_beamline()
 	default_random_engine rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	int number_of_genes       = acc.settingSize();
-	int number_of_genomes     = 20;
-	int number_of_generations = 200;
+	int number_of_genomes     = 40;
+	int number_of_generations = 500;
 
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
 	ep.sigma_survive              = 0.3; // 0.3 scheint ein guter Wert zu sein // 0.1 wirft 60% weg, 0.2 wirft 40% weg
-	ep.p_mutate_disturbe          = 0.6;
+	ep.p_mutate_disturbe          = 0.80; // 0.60
 	ep.p_mutate_replace           = 0.05; // 0.05
-	ep.p_non_homologous_crossover = 0.05;
+	ep.p_non_homologous_crossover = 0.025; // 0.05
 	ep.b_crossing_over            = true;
 	ep.b_mutate_mutation_rate     = true;
-	ep.n_min_genes_till_cross     = 1;
+	ep.n_min_genes_till_cross     = 2;
 	ep.n_max_genes_till_cross     = number_of_genes/2;	
 	     
 	
@@ -254,7 +255,7 @@ void experiment_m3_beamline()
 		p = p.createOffspring(ep, rnd);
 		p.evaluate(fitness_m3_beamline);
 		outfile << i << "," << p.getBestGenome().fitness() << "\n";
-		cout << "Generation " << i << ":\t" << p.toLine() << endl;    
+		cout << "Generation " << i << ":\t" << p.toString() << endl;    
 	}
     
 	outfile.close();
