@@ -16,6 +16,7 @@
 #include "Trafo.hpp"
 #include "DipoleMagnet.hpp"
 #include "RectangularDipoleMagnet.hpp"
+#include "ProfileGrid.hpp"
 
 using namespace std;
 
@@ -130,8 +131,32 @@ double fitness_m3_beamline(const vector<double>& genes)
 {
 	double f=0;
 	acc.setNormValues(genes);
- 	acc.startSimulation(40000);
- 	f += t0->getCounts() * (1 + t1->getCounts()) * (1 + t2->getCounts()) * (1 + t3->getCounts()) * (1 + t4->getCounts()) * (1 + t5->getCounts()) * (1 + t6->getCounts()) * (1 + t7->getCounts());
+ 	acc.startSimulation(80000);
+ 	f = t0->getCounts();
+	f = f * (1 + t1->getCounts() - t1->getCounts()*(abs(((ProfileGrid*) acc.getDeviceByName("UMADG1g"))->centerX()) + abs(((ProfileGrid*) acc.getDeviceByName("UMADG1g"))->centerY())));
+	f = f * (1 + t2->getCounts() - t2->getCounts()*(abs(((ProfileGrid*) acc.getDeviceByName("UMADG2g"))->centerX()) + abs(((ProfileGrid*) acc.getDeviceByName("UMADG2g"))->centerY())));
+	f = f * (1 + t3->getCounts() - t3->getCounts()*(abs(((ProfileGrid*) acc.getDeviceByName("UMADG3g"))->centerX()) + abs(((ProfileGrid*) acc.getDeviceByName("UMADG3g"))->centerY())));
+	f = f * (1 + t4->getCounts() - t4->getCounts()*(abs(((ProfileGrid*) acc.getDeviceByName("UMADG4g"))->centerX()) + abs(((ProfileGrid*) acc.getDeviceByName("UMADG4g"))->centerY())));
+	f = f * (1 + t5->getCounts());
+	f = f * (1 + t6->getCounts() - t6->getCounts()*(abs(((ProfileGrid*) acc.getDeviceByName("UM3DG6g"))->centerX()) + abs(((ProfileGrid*) acc.getDeviceByName("UM3DG6g"))->centerY())));
+	f = f * (1 + t7->getCounts() - t7->getCounts()*(abs(((ProfileGrid*) acc.getDeviceByName("TARGET_SCREENag"))->centerX()) + abs(((ProfileGrid*) acc.getDeviceByName("TARGET_SCREENag"))->centerY())));
+	f = f * (1 + t7->getCounts() - t7->getCounts()*(abs(((ProfileGrid*) acc.getDeviceByName("TARGET_SCREENbg"))->centerX()) + abs(((ProfileGrid*) acc.getDeviceByName("TARGET_SCREENbg"))->centerY())));
+ 	
+ /*	f += t0->getCounts() * (1 + t1->getCounts()) * (1 + t2->getCounts()) * (1 + t3->getCounts()) * (1 + t4->getCounts()) * (1 + t5->getCounts()) * (1 + t6->getCounts()) * (1 + t7->getCounts());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UMADG1g"))->centerX());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UMADG1g"))->centerY());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UMADG2g"))->centerX());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UMADG2g"))->centerY());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UMADG3g"))->centerX());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UMADG3g"))->centerY());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UMADG4g"))->centerX());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UMADG4g"))->centerY());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UM3DG6g"))->centerX());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("UM3DG6g"))->centerY());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("TARGET_SCREENag"))->centerX());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("TARGET_SCREENag"))->centerY());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("TARGET_SCREENbg"))->centerX());
+ 	f -= 1E6 * abs(((ProfileGrid*) acc.getDeviceByName("TARGET_SCREENbg"))->centerY());*/
 	return f;
 }
 
@@ -146,9 +171,9 @@ void experiment_m3_beamline()
 	t6 = new Trafo("T6");
 	t7 = new Trafo("T7");	
 	
-	//IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
+	IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
 	//IonSource ion_source(12, 6, 2, 1000, 0., 0.00006, 0., 0.00150, 0., 0.00030, 0., 0.00212, 0., 0., 0., 0.);
-    IonSource ion_source(12, 6, 2, 1000, 0., 0.00003, 0., 0.00050, 0., 0.00015, 0., 0.00050, 0., 0., 0., 0.);
+    //IonSource ion_source(12, 6, 2, 1000, 0., 0.00003, 0., 0.00050, 0., 0.00015, 0., 0.00050, 0., 0., 0., 0.);
 	acc.setIonSource(ion_source);
 		
 	double max_quad_strength = 7;
@@ -161,23 +186,25 @@ void experiment_m3_beamline()
   	acc.appendDevice(t0); 	
   	acc.appendDevice(new RectangularDipoleMagnet("UT1MK0", 0.080, 0.040, -10.*pi*-4.894/180., -10.*pi/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.1 + 2.3385 + 0.124));
-	acc.appendDevice(new Screen("PROBE", grid_width, grid_width, dpm));
+//	acc.appendDevice(new Screen("PROBE", grid_width, grid_width, dpm));
 	acc.appendDevice(new HKick("UMAMS1H", -0.1, 0.1));
  	acc.appendDevice(new VKick("UMAMS1V", -0.1, 0.1));
-	acc.appendDevice(new Screen("PROBE2", grid_width, grid_width, dpm));
+//	acc.appendDevice(new Screen("PROBE2", grid_width, grid_width, dpm));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.124 + 0.0935 + 0.0335));
-    acc.appendDevice(new Screen("PROBE3", grid_width, grid_width, dpm));
+//	acc.appendDevice(new Screen("PROBE3", grid_width, grid_width, dpm));
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD11", 0.040, 0.040, 0.318, 0.0, max_quad_strength));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.0335 + 0.0335));
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD12", 0.040, 0.040, 0.318, -max_quad_strength, 0.0));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.0335 + 0.100));
 // 	acc.appendDevice(new DriftTube("DUMMY", drift_width, drift_width, 4)); 	
  	acc.appendDevice(new Screen("UMADG1", grid_width, grid_width, dpm)); 
+	acc.appendDevice(new ProfileGrid("UMADG1g", grid_width, grid_width, 100));
  	acc.appendDevice(t1); 	
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.460));
   	acc.appendDevice(new RectangularDipoleMagnet("UMAMU1", 0.080, 0.040, -12.5*pi*-7.699/180., -12.5*pi/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.465));
  	acc.appendDevice(new Screen("UMADG2", grid_width, grid_width, dpm)); 
+	acc.appendDevice(new ProfileGrid("UMADG2g", grid_width, grid_width, 100));
  	acc.appendDevice(t2); 	
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.465)); 	
   	acc.appendDevice(new RectangularDipoleMagnet("UMAMU2a", 0.080, 0.040, -22.5*pi*-2.739/180., -22.5*pi/180.));
@@ -189,6 +216,7 @@ void experiment_m3_beamline()
   	acc.appendDevice(new RectangularDipoleMagnet("UMAMU2b", 0.080, 0.040, -22.5*pi*-2.739/180., -22.5*pi/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.300));
  	acc.appendDevice(new Screen("UMADG3", grid_width, grid_width, dpm));
+	acc.appendDevice(new ProfileGrid("UMADG3g", grid_width, grid_width, 100));
  	acc.appendDevice(t3); 	
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.300));
   	acc.appendDevice(new RectangularDipoleMagnet("UMAMU2c", 0.080, 0.040, -22.5*pi*-2.739/180., -22.5*pi/180.));
@@ -198,6 +226,7 @@ void experiment_m3_beamline()
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD32", 0.040, 0.040, 0.318, -max_quad_strength, 0.0));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.491));
  	acc.appendDevice(new Screen("UMADG4", grid_width, grid_width, dpm));
+	acc.appendDevice(new ProfileGrid("UMADG4g", grid_width, grid_width, 100));
  	acc.appendDevice(t4); 	
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.275));
  	acc.appendDevice(new HKick("UMAMS2H", -0.1, 0.1));
@@ -216,21 +245,25 @@ void experiment_m3_beamline()
  	acc.appendDevice(new QuadrupoleMagnet("UM3QD42", 0.040, 0.040, 0.318, -max_quad_strength, 0.0));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.249));
  	acc.appendDevice(new Screen("UM3DG6", grid_width, grid_width, dpm));
+	acc.appendDevice(new ProfileGrid("UM3DG6g", grid_width, grid_width, 100));
  	acc.appendDevice(t6); 	
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 2.5845 + 2.400));
 
- 	acc.appendDevice(new Screen("TARGET_SCREENa", grid_width, grid_width, dpm)); 
+ 	acc.appendDevice(new Screen("TARGET_SCREENa", grid_width, grid_width, dpm));
+	acc.appendDevice(new ProfileGrid("TARGET_SCREENag", grid_width, grid_width, 100));
  	acc.appendDevice(new Slit("TARGET_SIZE", -0.002, 0.002, -0.002, 0.002));
- 	acc.appendDevice(new Screen("TARGET_SCREENb", grid_width, grid_width, dpm)); 	
+ 	acc.appendDevice(new Screen("TARGET_SCREENb", grid_width, grid_width, dpm));
+	acc.appendDevice(new ProfileGrid("TARGET_SCREENbg", grid_width, grid_width, 100));
  	acc.appendDevice(t7);
 	acc.setScreenIgnore(true);
 
+// 	cout << acc.toString() << endl; 	
  	
 	default_random_engine rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
 	int number_of_genes       = acc.settingSize();
-	int number_of_genomes     = 40;
-	int number_of_generations = 500;
+	int number_of_genomes     = 30;
+	int number_of_generations = 300;
 
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
@@ -275,9 +308,9 @@ void experiment_m3_beamline()
 	((Screen*) acc.getDeviceByName("UM3DG6"))->exportHistogram();
 	((Screen*) acc.getDeviceByName("TARGET_SCREENa"))->exportHistogram();
 	((Screen*) acc.getDeviceByName("TARGET_SCREENb"))->exportHistogram();
-	((Screen*) acc.getDeviceByName("PROBE"))->exportHistogram();
-	((Screen*) acc.getDeviceByName("PROBE2"))->exportHistogram();
-        ((Screen*) acc.getDeviceByName("PROBE3"))->exportHistogram();
+//	((Screen*) acc.getDeviceByName("PROBE"))->exportHistogram();
+//	((Screen*) acc.getDeviceByName("PROBE2"))->exportHistogram();
+//	((Screen*) acc.getDeviceByName("PROBE3"))->exportHistogram();
 }
 
  
