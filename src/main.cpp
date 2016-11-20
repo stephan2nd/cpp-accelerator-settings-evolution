@@ -1,7 +1,7 @@
 #include <iostream>
 #include <random>
 #include <fstream>
-//#include <chrono>
+#include <vector>
 
 #include "Genome.hpp"
 #include "Population.hpp"
@@ -31,6 +31,7 @@ Trafo* t5;
 Trafo* t6;
 Trafo* t7;
 Trafo* final_trafo;
+vector<Trafo*> trafos;
 
 double fitness_simple_acc(const vector<double>& genes)
 {
@@ -160,6 +161,22 @@ double fitness_m3_beamline(const vector<double>& genes)
 	return f;
 }
 
+double fitness_mix_beamline(const vector<double>& genes)
+{
+	double f=1;
+	acc.setNormValues(genes);
+ 	acc.startSimulation(80000);
+
+	for( auto it=trafos.begin(); it<trafos.end(); it++ ){
+		//cout << "FITN=" << (*it)->getCounts() << endl;
+		f = f * ( 1 + (*it)->getCounts() );
+	}	
+	//cout << "f=" << f << endl;
+	return f;
+}
+
+
+
 void experiment_m3_beamline()
 {
 	t0 = new Trafo("T0");
@@ -179,12 +196,11 @@ void experiment_m3_beamline()
 	double max_quad_strength = 7;
 	double drift_width = 0.040;
 	double grid_width = 0.040;
-	double dpm = 5000;
-	const double pi = 3.141592653589793;	
+	double dpm = 5000;	
 		
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 1.1 + 0.1));
   	acc.appendDevice(t0); 	
-  	acc.appendDevice(new RectangularDipoleMagnet("UT1MK0", 0.080, 0.040, -10.*pi*-4.894/180., -10.*pi/180.));
+  	acc.appendDevice(new RectangularDipoleMagnet("UT1MK0", 0.080, 0.040, -10.*M_PI*-4.894/180., -10.*M_PI/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.1 + 2.3385 + 0.124));
 //	acc.appendDevice(new Screen("PROBE", grid_width, grid_width, dpm));
 	acc.appendDevice(new HKick("UMAMS1H", -0.1, 0.1));
@@ -201,25 +217,25 @@ void experiment_m3_beamline()
 	acc.appendDevice(new ProfileGrid("UMADG1g", grid_width, grid_width, 100));
  	acc.appendDevice(t1); 	
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.460));
-  	acc.appendDevice(new RectangularDipoleMagnet("UMAMU1", 0.080, 0.040, -12.5*pi*-7.699/180., -12.5*pi/180.));
+  	acc.appendDevice(new RectangularDipoleMagnet("UMAMU1", 0.080, 0.040, -12.5*M_PI*-7.699/180., -12.5*M_PI/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.465));
  	acc.appendDevice(new Screen("UMADG2", grid_width, grid_width, dpm)); 
 	acc.appendDevice(new ProfileGrid("UMADG2g", grid_width, grid_width, 100));
  	acc.appendDevice(t2); 	
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.465)); 	
-  	acc.appendDevice(new RectangularDipoleMagnet("UMAMU2a", 0.080, 0.040, -22.5*pi*-2.739/180., -22.5*pi/180.));
+  	acc.appendDevice(new RectangularDipoleMagnet("UMAMU2a", 0.080, 0.040, -22.5*M_PI*-2.739/180., -22.5*M_PI/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.3335));  	
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD21", 0.040, 0.040, 0.318, 0.0, max_quad_strength));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.0335 + 0.0335));
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD22", 0.040, 0.040, 0.318, -max_quad_strength, 0.0));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.3335));
-  	acc.appendDevice(new RectangularDipoleMagnet("UMAMU2b", 0.080, 0.040, -22.5*pi*-2.739/180., -22.5*pi/180.));
+  	acc.appendDevice(new RectangularDipoleMagnet("UMAMU2b", 0.080, 0.040, -22.5*M_PI*-2.739/180., -22.5*M_PI/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.300));
  	acc.appendDevice(new Screen("UMADG3", grid_width, grid_width, dpm));
 	acc.appendDevice(new ProfileGrid("UMADG3g", grid_width, grid_width, 100));
  	acc.appendDevice(t3); 	
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.300));
-  	acc.appendDevice(new RectangularDipoleMagnet("UMAMU2c", 0.080, 0.040, -22.5*pi*-2.739/180., -22.5*pi/180.));
+  	acc.appendDevice(new RectangularDipoleMagnet("UMAMU2c", 0.080, 0.040, -22.5*M_PI*-2.739/180., -22.5*M_PI/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.3335));
  	acc.appendDevice(new QuadrupoleMagnet("UMAQD31", 0.040, 0.040, 0.318, 0.0, max_quad_strength));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.0335 + 0.0335));
@@ -232,9 +248,9 @@ void experiment_m3_beamline()
  	acc.appendDevice(new HKick("UMAMS2H", -0.1, 0.1));
  	acc.appendDevice(new VKick("UMAMS2V", -0.1, 0.1));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.124 + 0.3435 + 0.100));
-  	acc.appendDevice(new RectangularDipoleMagnet("UM2MU5", 0.080, 0.040, -22.5*pi*-2.739/180., -22.5*pi/180.));
+  	acc.appendDevice(new RectangularDipoleMagnet("UM2MU5", 0.080, 0.040, -22.5*M_PI*-2.739/180., -22.5*M_PI/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.700));
-  	acc.appendDevice(new RectangularDipoleMagnet("UM3MU6", 0.080, 0.040, -22.5*pi*-2.739/180., -22.5*pi/180.));
+  	acc.appendDevice(new RectangularDipoleMagnet("UM3MU6", 0.080, 0.040, -22.5*M_PI*-2.739/180., -22.5*M_PI/180.));
  	acc.appendDevice(new DriftTube("", drift_width, drift_width, 0.0195 + 0.124));
  	acc.appendDevice(t5);
  	acc.appendDevice(new HKick("UM1MS3H", -0.1, 0.1));
@@ -289,6 +305,7 @@ void experiment_m3_beamline()
 		p.evaluate(fitness_m3_beamline);
 		outfile << i << "," << p.getBestGenome().fitness() << "\n";
 		cout << "Generation " << i << ":\t" << p.toString() << endl;    
+		//cout << "Generation " << i << ":\t" << p.toLine() << endl;    
 	}
     
 	outfile.close();
@@ -313,6 +330,70 @@ void experiment_m3_beamline()
 //	((Screen*) acc.getDeviceByName("PROBE3"))->exportHistogram();
 }
 
+
+
+void experiment_mix_beamline()
+{
+	//IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
+	IonSource ion_source(12, 6, 2, 1000, 0., 0.00006, 0., 0.00150, 0., 0.00030, 0., 0.00212, 0., 0., 0., 0.);
+    //IonSource ion_source(12, 6, 2, 1000, 0., 0.00003, 0., 0.00050, 0., 0.00015, 0., 0.00050, 0., 0., 0., 0.);
+	acc.setIonSource(ion_source);
+
+	bool add_trafo_to_each_screen = true;
+	acc.appendDevicesFromMirkoFile("simple.mix", add_trafo_to_each_screen);
+	acc.getTrafos(trafos);
+	
+	for( auto it=trafos.begin(); it<trafos.end(); it++ ){
+		
+		cout << (*it)->toString() << endl;
+	}	
+
+	cout << acc.toString() << endl; 
+
+	default_random_engine rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
+
+	int number_of_genes       = acc.settingSize();
+	int number_of_genomes     = 30;
+	int number_of_generations = 150;
+
+	EvolutionParameters ep;
+	ep.n_keep                     = 2;
+	ep.sigma_survive              = 0.3; // 0.3 scheint ein guter Wert zu sein // 0.1 wirft 60% weg, 0.2 wirft 40% weg
+	ep.p_mutate_disturbe          = 0.80; // 0.60
+	ep.p_mutate_replace           = 0.05; // 0.05
+	ep.p_non_homologous_crossover = 0.025; // 0.05
+	ep.b_crossing_over            = true;
+	ep.b_mutate_mutation_rate     = true;
+	ep.n_min_genes_till_cross     = 2;
+	ep.n_max_genes_till_cross     = number_of_genes/2;
+
+	Population p(number_of_genomes, number_of_genes, rnd);
+	p.evaluate(fitness_mix_beamline);    
+
+    ofstream outfile;
+    outfile.open("fitness.dat", ios::out | ios::trunc );
+    outfile << "func\n";
+
+	for( int i=0; i<number_of_generations; i++ ) {    
+		p = p.createOffspring(ep, rnd);
+		p.evaluate(fitness_mix_beamline);
+		outfile << i << "," << p.getBestGenome().fitness() << "\n";
+		cout << "Generation " << i << ":\t" << p.toString() << endl;    
+		//cout << "Generation " << i << ":\t" << p.toLine() << endl;    
+	}
+    
+	outfile.close();
+	cout << p.getBestGenome() << endl;    
+    
+	acc.setScreenIgnore(false);
+	acc.setNormValues(p.getBestGenome().getGenes());
+ 	acc.startSimulation(10000000);
+ 	cout << acc.toString() << endl; 	
+ 	
+	acc.writeMirkoMakro("mirko.mak");	
+	acc.exportHistograms();		
+}
+
  
  
 int main(int argc , char *argv[])
@@ -324,7 +405,8 @@ int main(int argc , char *argv[])
 	time(&start);	
  	
 	//experiment_simple_acc();
-	experiment_m3_beamline();
+	//experiment_m3_beamline();
+	experiment_mix_beamline();
 
 	time(&finish);
 	float diff = (((float)clock()-(float)begin)/CLOCKS_PER_SEC);
