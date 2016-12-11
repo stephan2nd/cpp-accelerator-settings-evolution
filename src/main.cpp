@@ -164,15 +164,17 @@ double fitness_m3_beamline(const vector<double>& genes)
 double fitness_mix_beamline(const vector<double>& genes)
 {
 	double f=1;
+	double fmax = 1;
 	acc.setNormValues(genes);
- 	acc.startSimulation(80000);
+ 	acc.startSimulation(50000);
 
 	for( auto it=trafos.begin(); it<trafos.end(); it++ ){
-		//cout << "FITN=" << (*it)->getCounts() << endl;
-		f = f * ( 1 + (*it)->getCounts() );
+		//f = f * ( 1 + (*it)->getCounts() );
+		f = f + (*it)->getCounts();
+		//fmax = fmax * (1 + 10000);
+		fmax = fmax + 50000;
 	}	
-	//cout << "f=" << f << endl;
-	return f;
+	return (f/fmax) - 0.01 * acc.excitation();
 }
 
 
@@ -334,37 +336,35 @@ void experiment_m3_beamline()
 
 void experiment_mix_beamline()
 {
+	IonSource ion_source(12, 6, 2, 1000, 0., 0.0000, 0., 0.0002, 0., 0.0000, 0., 0.0002, 0., 0., 0., 0.);
 	//IonSource ion_source(12, 6, 2, 1000, 0., 0.00012, 0., 0.00245, 0., 0.00063, 0., 0.00316, 0., 0., 0., 0.);
-	IonSource ion_source(12, 6, 2, 1000, 0., 0.00006, 0., 0.00150, 0., 0.00030, 0., 0.00212, 0., 0., 0., 0.);
+	//IonSource ion_source(12, 6, 2, 1000, 0., 0.00006, 0., 0.00150, 0., 0.00030, 0., 0.00212, 0., 0., 0., 0.);
     //IonSource ion_source(12, 6, 2, 1000, 0., 0.00003, 0., 0.00050, 0., 0.00015, 0., 0.00050, 0., 0., 0., 0.);
 	acc.setIonSource(ion_source);
 
 	bool add_trafo_to_each_screen = true;
-	acc.appendDevicesFromMirkoFile("simple.mix", add_trafo_to_each_screen);
+	acc.appendDevicesFromMirkoFile("apertures01.mix", add_trafo_to_each_screen);
+	acc.appendDevice(new Slit("TARGET_SIZE", -0.002, 0.002, -0.002, 0.002));
+	acc.appendDevice(new Screen("TARGET", 0.1, 0.1, 1000));
+	acc.appendDevice(new Trafo("TARGET"));
 	acc.getTrafos(trafos);
+	acc.setScreenIgnore(true);
 	
-	for( auto it=trafos.begin(); it<trafos.end(); it++ ){
-		
-		cout << (*it)->toString() << endl;
-	}	
-
-	cout << acc.toString() << endl; 
-
 	default_random_engine rnd(chrono::high_resolution_clock::now().time_since_epoch().count());
 
-	int number_of_genes       = acc.settingSize();
-	int number_of_genomes     = 30;
-	int number_of_generations = 150;
+	int number_of_genes       = acc.settingSize()*2;
+	int number_of_genomes     = 100;
+	int number_of_generations = 100;
 
 	EvolutionParameters ep;
 	ep.n_keep                     = 2;
 	ep.sigma_survive              = 0.3; // 0.3 scheint ein guter Wert zu sein // 0.1 wirft 60% weg, 0.2 wirft 40% weg
 	ep.p_mutate_disturbe          = 0.80; // 0.60
 	ep.p_mutate_replace           = 0.05; // 0.05
-	ep.p_non_homologous_crossover = 0.025; // 0.05
+	ep.p_non_homologous_crossover = 0.08; // 0.05
 	ep.b_crossing_over            = true;
 	ep.b_mutate_mutation_rate     = true;
-	ep.n_min_genes_till_cross     = 2;
+	ep.n_min_genes_till_cross     = 1; // 2
 	ep.n_max_genes_till_cross     = number_of_genes/2;
 
 	Population p(number_of_genomes, number_of_genes, rnd);
@@ -374,12 +374,12 @@ void experiment_mix_beamline()
     outfile.open("fitness.dat", ios::out | ios::trunc );
     outfile << "func\n";
 
-	for( int i=0; i<number_of_generations; i++ ) {    
+	for( int i=0; i<number_of_generations and p.getBestGenome().fitness()<0.99; i++ ) {    
 		p = p.createOffspring(ep, rnd);
 		p.evaluate(fitness_mix_beamline);
 		outfile << i << "," << p.getBestGenome().fitness() << "\n";
-		cout << "Generation " << i << ":\t" << p.toString() << endl;    
-		//cout << "Generation " << i << ":\t" << p.toLine() << endl;    
+		//cout << "Generation " << i << ":\t" << p.toString() << endl;    
+		cout << "Generation " << i << ":\t" << p.toLine() << endl;    
 	}
     
 	outfile.close();
@@ -398,7 +398,7 @@ void experiment_mix_beamline()
  
 int main(int argc , char *argv[])
 {
-	cout << "BRIENCHJEN!" << endl;
+	cout << "start" << endl;
 	
 	clock_t begin = clock();
 	time_t start, finish;
